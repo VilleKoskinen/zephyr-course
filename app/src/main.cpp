@@ -1,30 +1,29 @@
-#include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
 
-#define SLEEP_TIME_MS 1000
+#define LED0_PIN 22
 
-/* The devicetree node identifier for the "led0" alias. */
-#define LED_NODE DT_ALIAS(led0)
+static const struct device *const gpio0 =
+	DEVICE_DT_GET(DT_NODELABEL(gpio0));
 
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED_NODE, gpios);
-
-LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
-
-int main(void)
+int main()
 {
-    bool led_state = true;
+	int ret;
 
-    if (!gpio_is_ready_dt(&led)) return 0;
+	if (!device_is_ready(gpio0)) {
+		return 0;
+	}
 
-    if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) < 0) return 0;
+	ret = gpio_pin_configure(gpio0, LED0_PIN, GPIO_OUTPUT_INACTIVE);
+	if (ret < 0) {
+		return 0;
+	}
 
-    while (1) {
-        if (gpio_pin_toggle_dt(&led) < 0) return 0;
+	while (true) {
+		gpio_pin_toggle(gpio0, LED0_PIN);
+		k_msleep(1000);
+	}
 
-        led_state = !led_state;
-        LOG_INF("LED state: %s", led_state ? "ON" : "OFF");
-        k_msleep(SLEEP_TIME_MS);
-    }
-    return 0;
+	return 0;
 }
