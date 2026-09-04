@@ -5,25 +5,29 @@
 #define LED0_PIN 22
 
 static const struct device *const gpio0 =
-	DEVICE_DT_GET(DT_NODELABEL(gpio0));
+    DEVICE_DT_GET(DT_NODELABEL(gpio0));
 
-int main()
+int main(void)
 {
-	int ret;
+    int ret;
 
-	if (!device_is_ready(gpio0)) {
-		return 0;
-	}
+    if (!device_is_ready(gpio0)) {
+        return 0;
+    }
 
-	ret = gpio_pin_configure(gpio0, LED0_PIN, GPIO_OUTPUT_INACTIVE);
-	if (ret < 0) {
-		return 0;
-	}
+    ret = gpio_pin_configure(gpio0, LED0_PIN, GPIO_OUTPUT_INACTIVE);
+    if (ret < 0) {
+        return 0;
+    }
 
-	while (true) {
-		gpio_pin_toggle(gpio0, LED0_PIN);
-		k_msleep(1000);
-	}
+    while (true) {
+        ret = gpio_pin_toggle(gpio0, LED0_PIN);
+        if (ret < 0) {
+            return 0;
+        }
 
-	return 0;
+        k_msleep(CONFIG_BLINK_SLEEP_TIME_MS);
+    }
+
+    return 0;
 }
