@@ -1,32 +1,35 @@
-#include <zephyr/kernel.h>
-#include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
-#define LED0_PIN 22
+#define LED_NODE DT_ALIAS(app_led)
 
-static const struct device *const gpio0 =
-    DEVICE_DT_GET(DT_NODELABEL(gpio0));
+static const struct gpio_dt_spec led =
+    GPIO_DT_SPEC_GET(LED_NODE, gpios);
+
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 int main(void)
 {
-    int ret;
+    bool led_state = true;
 
-    if (!device_is_ready(gpio0)) {
+    if (!gpio_is_ready_dt(&led)) {
         return 0;
     }
 
-    ret = gpio_pin_configure(gpio0, LED0_PIN, GPIO_OUTPUT_INACTIVE);
-    if (ret < 0) {
+    if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) < 0) {
         return 0;
     }
 
     while (true) {
-        ret = gpio_pin_toggle(gpio0, LED0_PIN);
-        if (ret < 0) {
+        if (gpio_pin_toggle_dt(&led) < 0) {
             return 0;
         }
 
-        k_msleep(CONFIG_BLINK_SLEEP_TIME_MS);
+        led_state = !led_state;
+        LOG_INF("LED state: %s", led_state ? "ON" : "OFF");
+
+        k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);
     }
 
     return 0;
