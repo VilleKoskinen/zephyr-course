@@ -1,0 +1,2 @@
+config BOARD_CUSTOM_PICO_SCRATCH
+	select SOC_RP2040
