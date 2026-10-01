@@ -1,0 +1,6 @@
+board:
+  name: custom_pico
+  full_name: Custom Raspberry Pi Pico
+  vendor: raspberrypi
+  socs:
+  - name: rp2040
